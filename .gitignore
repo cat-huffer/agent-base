@@ -1,0 +1,70 @@
+# ==============================
+# Operating system and editors
+# ==============================
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+*.iml
+
+# ==============================
+# Python environments and caches
+# ==============================
+.venv/
+venv/
+env/
+ENV/
+.tox/
+.nox/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ==============================
+# Test, lint, type-check and coverage output
+# ==============================
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+.hypothesis/
+
+# ==============================
+# Build and packaging output
+# ==============================
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ==============================
+# Local configuration and secrets
+# ==============================
+.env
+.env.*
+!.env.example
+
+# ==============================
+# Local runtime data and logs
+# ==============================
+.data/
+*.log
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+*.db
+
+# ==============================
+# Project-local SQL fixtures and scratch files
+# ==============================
+database/scripts/local/*.sql
+*.session.sql
+
+# ==============================
+# Tool-specific local state
+# ==============================
+.agents/
+.codex/
+.aws/

@@ -1,0 +1,25 @@
+routes:
+
+  chat:
+    profile: default
+
+  default:
+    profile: default
+
+  routing:
+    profile: fast
+
+  classification:
+    profile: fast
+
+  planning:
+    profile: reasoning
+
+  research:
+    profile: reasoning
+
+  synthesis:
+    profile: reasoning
+
+  eval_judge:
+    profile: judge

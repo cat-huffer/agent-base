@@ -1,0 +1,84 @@
+# E2E Task 草图：字段、fixture 和 grader ID 是设计参考，当前尚无执行实现。
+# Task 定义输入与成功条件；trial 次数、并发、成本预算及回归阈值由 suite 决定。
+
+id: sales_by_department_2026
+version: 0.0.1
+name: "查询 2026 年各部门已支付订单的销售额"
+description: >
+  从用户提问进入 Assistant，经数据查询能力取得结果，再向用户回答。
+  主要验证业务结果和回答是否一致；不要求固定工具调用顺序或 SQL 字符串。
+
+level: e2e
+capability: text2sql
+tags: [smoke, regression, aggregation]
+difficulty: medium
+source:
+  type: synthetic
+  note: "基于销售分析场景构造；后续可加入真实失败案例。"
+
+input:
+  message: "请按北京时间统计 2026 年各部门已支付订单的销售额（人民币元），按金额从高到低列出部门和金额。"
+  session: fresh
+
+environment:
+  # 计划中的 fixture；每次 trial 从同一份数据创建独立的只读数据库。
+  fixture: sales_2026_v1
+  reset: before_each_trial
+  database:
+    timezone: Asia/Shanghai
+    permissions: read_only
+    schema:
+      departments: "id, name"
+      sales: "id, department_id, paid_at, status, amount_cny"
+    data_contract:
+      - "含 2026 年已支付订单，以及未支付和跨年订单作为干扰项。"
+      - "按参考查询执行后，必须得到 expected.outcome.rows。"
+
+expected:
+  # outcome.rows 是评测程序从实际查询执行结果采集的结构化数据，
+  # 不是从 Agent 的自然语言回答中反向解析，也不依赖平台 trace 提供工具输出。
+  outcome:
+    rows:
+      - {department: "华东", sales_amount: 1500000}
+      - {department: "华南", sales_amount: 1200000}
+      - {department: "华北", sales_amount: 800000}
+    order: {field: sales_amount, direction: desc}
+  answer:
+    requirements:
+      - "列出三个部门及对应金额，数值与实际查询结果一致。"
+      - "按金额从高到低排列，并说明统计口径为北京时间 2026 年的已支付订单。"
+    allow_equivalent_format: true
+
+# 人工验证 fixture 和 grader 时使用；不要求 Agent 生成相同 SQL。
+reference:
+  sql: |
+    SELECT d.name AS department, SUM(s.amount_cny) AS sales_amount
+    FROM sales AS s
+    JOIN departments AS d ON d.id = s.department_id
+    WHERE s.status = 'paid'
+      AND s.paid_at >= '2026-01-01 00:00:00'
+      AND s.paid_at < '2027-01-01 00:00:00'
+    GROUP BY d.id, d.name
+    ORDER BY sales_amount DESC;
+
+graders:
+  - id: sales_result_match
+    provider: local
+    target: outcome.rows
+    config:
+      numeric_tolerance: 0.01
+      order_matters: true
+    pass_threshold: 1.0
+    required: true
+
+  # 将 trial.final_output 与 expected.answer 一起交给平台 grader；
+  # 当前生产配置不向 Trace 上传敏感输入/输出，不能只凭 trace_id 评分内容。
+  - id: answer_grounded_in_result
+    provider: openai_platform
+    target: trial.final_output
+    config:
+      grader_ref: "sales_answer_grounding_v1"
+    pass_threshold: 0.8
+    required: true
+
+# trace_id 在每次 trial 中产生，用于复核执行过程，不预填在静态 Task 中。

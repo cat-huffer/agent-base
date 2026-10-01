@@ -1,0 +1,29 @@
+profiles:
+
+  default:
+    model: deepseek-flash
+    settings:
+      reasoning:
+        effort: none
+      verbosity: low 
+
+  fast:
+    model: deepseek-flash
+    settings:
+      reasoning:
+        effort: none
+      verbosity: low
+
+  reasoning:
+    model: deepseek-v4-pro
+    settings:
+      reasoning:
+        effort: medium
+      verbosity: low
+
+  judge:
+    model: deepseek-v4-pro
+    settings:
+      reasoning:
+        effort: high
+      verbosity: low
