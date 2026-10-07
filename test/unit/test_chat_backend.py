@@ -12,7 +12,7 @@ from app.schemas.chat import ChatStreamEvent
 from app.services.chat import ChatService
 
 
-def test_chat_service_runs_assistant_with_session(monkeypatch, tmp_path) -> None:
+def test_chat_service_runs_router_with_session(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr(settings, "openai_tracing_api_key", None)
     received = {}
 
@@ -22,26 +22,28 @@ def test_chat_service_runs_assistant_with_session(monkeypatch, tmp_path) -> None
         received["session_id"] = session.session_id
         received["session_type"] = type(session)
         received["run_config"] = run_config
-        return SimpleNamespace(final_output="Hello from assistant")
+        return SimpleNamespace(final_output="Hello from router")
 
     monkeypatch.setattr("app.services.chat.Runner.run", fake_run)
 
     result = asyncio.run(ChatService(tmp_path / "sessions.db").chat("abc123", "Hello"))
 
-    assert result.message == "Hello from assistant"
+    assert result.message == "Hello from router"
     assert result.trace_id.startswith("trace_")
     assert received["input"] == "Hello"
     assert received["session_id"] == "abc123"
     assert received["session_type"] is AsyncSQLiteSession
     assert isinstance(received["agent"], Agent)
+    assert received["agent"].name == "Router"
     assert received["agent"].model == "deepseek-flash"
+    assert "入口路由 Agent" in received["agent"].instructions
     assert received["run_config"].trace_id == result.trace_id
     assert received["run_config"].group_id == "abc123"
     assert received["run_config"].trace_metadata == {
         "session_id": "abc123",
-        "agent": "assistant",
-        "model_profile": "default",
-        "prompt": "assistant",
+        "agent": "router",
+        "model_profile": "fast",
+        "prompt": "router",
         "prompt_version": "1.0.0",
         "environment": "development",
     }

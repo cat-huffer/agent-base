@@ -1,0 +1,4 @@
+id: router
+version: "1.0.0"
+template: router/system.md
+description: 根据用户请求选择专业 Agent 并执行 handoff

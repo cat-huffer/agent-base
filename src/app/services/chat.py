@@ -9,7 +9,7 @@ from agents.extensions.memory import AsyncSQLiteSession
 from loguru import logger
 from openai.types.responses import ResponseTextDeltaEvent
 
-from agent.agents.assistant import assemble_assistant_agent
+from agent.agents.router import assemble_router_agent
 from agent.models.router import ModelRouter, model_router
 from agent.prompts.render import PromptRender
 from app.config import settings
@@ -44,7 +44,7 @@ class ChatService:
     ) -> None:
         router = router if router is not None else model_router
         prompt_renderer = prompt_renderer if prompt_renderer is not None else PromptRender()
-        assembly = assemble_assistant_agent(router=router, prompt_renderer=prompt_renderer)
+        assembly = assemble_router_agent(router=router, prompt_renderer=prompt_renderer)
         self.agent = assembly.agent
         self.model_profile = assembly.model_profile
         self.prompt_profile = assembly.prompt_profile
@@ -105,7 +105,7 @@ class ChatService:
                     run_config=execution.run_config,
                 )
             if not isinstance(result.final_output, str):
-                raise RuntimeError("assistant did not return a text response")
+                raise RuntimeError("router did not return a text response")
             return ChatResult(message=result.final_output, trace_id=trace_id)
         except Exception:
             logger.exception("chat failed: trace_id={}", trace_id)
@@ -143,7 +143,7 @@ class ChatService:
                             async for _ in result.stream_events():
                                 pass
                 if not isinstance(result.final_output, str):
-                    raise RuntimeError("assistant did not return a text response")
+                    raise RuntimeError("router did not return a text response")
                 final_message = result.final_output
             yield ChatStreamEvent(type="completed", trace_id=trace_id, message=final_message)
         except asyncio.CancelledError:

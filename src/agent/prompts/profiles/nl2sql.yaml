@@ -1,0 +1,3 @@
+id: nl2sql
+version: "1.0.0"
+template: nl2sql/system.md

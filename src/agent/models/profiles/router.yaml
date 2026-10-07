@@ -9,6 +9,9 @@ routes:
   routing:
     profile: fast
 
+  nl2sql:
+    profile: reasoning
+
   classification:
     profile: fast
 
