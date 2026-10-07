@@ -17,7 +17,11 @@ def create_general_agent(
     profile = model_router_instance.resolve("chat")
     return Agent(
         name="General",
-        handoff_description="处理普通对话、解释和不涉及数据库查询的常见问题。",
+        handoff_description=(
+            "处理不需要读取本系统实际业务记录的请求，包括普通对话、SQL 和数据库知识、"
+            "物流关务业务概念与流程解释，以及写作协助；"
+            "也接收对本系统业务记录的写入请求，说明当前仅支持 SELECT 查询，不执行写入操作。"
+        ),
         instructions=renderer.render("general"),
         model=profile.model,
         model_settings=profile.settings,

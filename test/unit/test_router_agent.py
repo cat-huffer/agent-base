@@ -9,6 +9,17 @@ from agent.prompts.registry import PromptProfile
 from agent.prompts.render import PromptRender
 
 
+def test_router_exposes_only_the_two_supported_handoff_destinations() -> None:
+    router_agent = create_router_agent()
+
+    assert [agent.name for agent in router_agent.handoffs] == ["NL2SQL", "General"]
+    assert all(agent.handoffs == [] for agent in router_agent.handoffs)
+    assert "查询条件不完整" in router_agent.handoffs[0].handoff_description
+    assert "实际业务记录" in router_agent.handoffs[0].handoff_description
+    assert "业务概念" in router_agent.handoffs[1].handoff_description
+    assert "SQL 和数据库知识" in router_agent.handoffs[1].handoff_description
+
+
 def test_create_router_agent_uses_routing_model_and_rendered_prompt() -> None:
     router_agent = create_router_agent()
 

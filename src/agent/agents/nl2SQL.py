@@ -17,7 +17,10 @@ def create_nl2sql_agent(
     profile = model_router_instance.resolve("nl2sql")
     return Agent(
         name="NL2SQL",
-        handoff_description="将自然语言数据查询需求转换为 SQL；需要已知表结构，不执行查询。",
+        handoff_description=(
+            "处理需要读取本系统实际业务记录的数据请求，包括查询、筛选、核验、统计、汇总和分析；"
+            "即使查询条件不完整也应接收并判断下一步。当前负责生成 SQL，不执行查询。"
+        ),
         instructions=renderer.render("nl2sql"),
         model=profile.model,
         model_settings=profile.settings,
