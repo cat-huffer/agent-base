@@ -1,0 +1,40 @@
+# 路由边界：业务数据查询意图明确，但缺少定位记录的条件。
+
+id: router_customs_missing_filter
+version: 1.0.0
+name: "缺少分单号时仍将关务状态查询交给 NL2SQL"
+description: >
+  用户想查询某票货物的清关状态，但没有提供可定位记录的分单号或其他条件。
+  数据查询意图明确，应交给 NL2SQL 继续询问必要信息。
+
+level: module
+capability: routing
+tags: [router, regression, nl2sql, missing_filter, boundary]
+difficulty: medium
+source:
+  type: synthetic
+  note: "用于确认缺少查询条件不会导致明确的数据查询请求被错分到 General。"
+
+input:
+  message: "帮我查一下这票货的清关状态。"
+  session: fresh
+
+expected:
+  handoff_target: NL2SQL
+  handoff_count: 1
+
+graders:
+  - id: expected_handoff_target
+    provider: local
+    target: trial.handoff_target
+    config:
+      equals_expected: expected.handoff_target
+    pass_threshold: 1.0
+    required: true
+  - id: exactly_one_router_handoff
+    provider: local
+    target: trial.handoff_count
+    config:
+      equals_expected: expected.handoff_count
+    pass_threshold: 1.0
+    required: true

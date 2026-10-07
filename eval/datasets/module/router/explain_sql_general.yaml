@@ -1,0 +1,40 @@
+# Router Module Eval：解释 SQL 语法属于 General，不是业务数据查询。
+
+id: router_explain_sql_general
+version: 1.0.0
+name: "解释 SQL 语法时路由到 General"
+description: >
+  用户只想了解 LEFT JOIN 的含义，没有要求查询业务库或生成查询结果，
+  应交给 General。此用例用于防止 Router 因出现 SQL 关键词而误触发 NL2SQL。
+
+level: module
+capability: routing
+tags: [router, regression, general, sql_mention]
+difficulty: easy
+source:
+  type: synthetic
+  note: "用于覆盖 SQL 关键词的负例。"
+
+input:
+  message: "LEFT JOIN 是什么意思？"
+  session: fresh
+
+expected:
+  handoff_target: General
+  handoff_count: 1
+
+graders:
+  - id: expected_handoff_target
+    provider: local
+    target: trial.handoff_target
+    config:
+      equals_expected: expected.handoff_target
+    pass_threshold: 1.0
+    required: true
+  - id: exactly_one_router_handoff
+    provider: local
+    target: trial.handoff_count
+    config:
+      equals_expected: expected.handoff_count
+    pass_threshold: 1.0
+    required: true

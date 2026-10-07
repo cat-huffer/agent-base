@@ -1,0 +1,40 @@
+# 路由边界：业务主题明确，但没有提出查询或解释等具体请求。
+
+id: router_ambiguous_customs_data_request
+version: 1.0.0
+name: "未说明具体需求的关务数据请求交给 General"
+description: >
+  用户只表示想了解关务数据，没有要求查询某条记录、汇总数据或解释概念。
+  请求意图不足以判断为业务记录查询，按 Router 规则交给 General。
+
+level: module
+capability: routing
+tags: [router, regression, general, ambiguous, boundary]
+difficulty: medium
+source:
+  type: synthetic
+  note: "用于覆盖意图不明确时不误触发 NL2SQL 的边界。"
+
+input:
+  message: "我想了解一下关务数据。"
+  session: fresh
+
+expected:
+  handoff_target: General
+  handoff_count: 1
+
+graders:
+  - id: expected_handoff_target
+    provider: local
+    target: trial.handoff_target
+    config:
+      equals_expected: expected.handoff_target
+    pass_threshold: 1.0
+    required: true
+  - id: exactly_one_router_handoff
+    provider: local
+    target: trial.handoff_count
+    config:
+      equals_expected: expected.handoff_count
+    pass_threshold: 1.0
+    required: true

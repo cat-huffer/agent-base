@@ -1,0 +1,28 @@
+# Router 模块评测：只包含入口路由相关的正例、负例和边界用例。
+# 重复次数和 Router 模块通过门槛由本 Suite 管理。
+
+id: router_module
+version: 1.0.0
+name: "Router 模块评测"
+level: module
+capability: routing
+
+tasks:
+  - path: ../datasets/module/router/count_customs_records.yaml
+  - path: ../datasets/module/router/customs_awb_exists.yaml
+  - path: ../datasets/module/router/shipment_count.yaml
+  - path: ../datasets/module/router/explain_sql_general.yaml
+  - path: ../datasets/module/router/general_chat.yaml
+  - path: ../datasets/module/router/customs_missing_filter.yaml
+  - path: ../datasets/module/router/customs_process_question.yaml
+  - path: ../datasets/module/router/business_term_writing_request.yaml
+  - path: ../datasets/module/router/ambiguous_customs_data_request.yaml
+  - path: ../datasets/module/router/customs_field_definition.yaml
+  - path: ../datasets/module/router/implicit_awb_status.yaml
+
+trial_policy:
+  repetitions: 5
+  parallelism: 1
+
+acceptance:
+  required_task_pass_rate: 1.0

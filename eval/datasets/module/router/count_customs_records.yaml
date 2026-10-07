@@ -1,0 +1,41 @@
+# Router Module Eval 用例：只评估入口 Router 是否把请求交给正确的 Agent。
+# Task 声明输入、预期路由目标和确定性 grader；运行结果保存在 Trial 中。
+
+id: router_count_customs_records # 用例唯一标识，供 Suite 引用和结果关联。
+version: 1.0.0 # 用例版本；修改输入或验收规则时递增。
+name: "询问关务表记录数时路由到 NL2SQL" # 便于在评测报告中识别用例。
+description: >
+  用户询问关务表中有多少条记录。该请求需要读取业务数据，应交给 NL2SQL。
+  此 Module Eval 只验证 Router 的 handoff 目标，不评价 SQL 生成或执行结果。
+
+level: module # 评测单个模块的行为。
+capability: routing # 本用例测量的能力类别
+tags: [router, regression, nl2sql] # 用于筛选路由回归及 NL2SQL 相关用例。
+difficulty: easy # 用例难度标记，不参与评分。
+source:
+  type: synthetic # 用例来源类别：人工构造，不是线上对话样本。
+  note: 人工构造的回归测试用例 # 补充来源说明。
+
+input:
+  message: "关务表中有多少条记录？" # 用户原始输入。
+  session: fresh # 使用全新空会话，不带历史消息。
+
+expected:
+  handoff_target: NL2SQL # 预期 Router 将请求移交给 NL2SQL Agent。
+  handoff_count: 1 # Router 应当且只移交一次。
+
+graders:
+  - id: expected_handoff_target
+    provider: local # 用确定性本地断言检查结果。
+    target: trial.handoff_target # 读取 Trial 记录的实际 handoff 目标。
+    config:
+      equals_expected: expected.handoff_target # 与本 Task 声明的预期目标比较。
+    pass_threshold: 1.0 # 必须完全匹配才算通过。
+    required: true # 此项失败则整个 Task 判为失败。
+  - id: exactly_one_router_handoff
+    provider: local
+    target: trial.handoff_count
+    config:
+      equals_expected: expected.handoff_count
+    pass_threshold: 1.0
+    required: true

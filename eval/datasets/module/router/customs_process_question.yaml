@@ -1,0 +1,40 @@
+# 路由边界：提到关务业务，但询问的是流程知识而非业务记录。
+
+id: router_customs_process_question
+version: 1.0.0
+name: "询问关务流程时路由到 General"
+description: >
+  用户询问办理关务业务的一般流程，不要求查询或核验系统中的业务记录，
+  应交给 General。此用例用于防止仅根据“关务”关键词触发 NL2SQL。
+
+level: module
+capability: routing
+tags: [router, regression, general, customs, boundary]
+difficulty: medium
+source:
+  type: synthetic
+  note: "用于区分关务流程知识问答与关务业务数据查询。"
+
+input:
+  message: "一般办理关务申报要经过哪些步骤？"
+  session: fresh
+
+expected:
+  handoff_target: General
+  handoff_count: 1
+
+graders:
+  - id: expected_handoff_target
+    provider: local
+    target: trial.handoff_target
+    config:
+      equals_expected: expected.handoff_target
+    pass_threshold: 1.0
+    required: true
+  - id: exactly_one_router_handoff
+    provider: local
+    target: trial.handoff_count
+    config:
+      equals_expected: expected.handoff_count
+    pass_threshold: 1.0
+    required: true

@@ -1,0 +1,13 @@
+# 整体回归入口：组合各模块 Suite，不在此重复维护模块 Task 列表。
+# 每个模块的重复次数由被引用的模块 Suite 管理；此处设置整体验收门槛。
+
+id: full_regression
+version: 1.0.0
+name: "整体回归评测"
+level: regression
+
+suites:
+  - path: router.yaml
+
+acceptance:
+  required_task_pass_rate: 1.0

@@ -1,0 +1,40 @@
+# Router Module Eval：业务数据存在性查询应交给 NL2SQL。
+
+id: router_customs_awb_exists
+version: 1.0.0
+name: "按分单号查询关务记录是否存在"
+description: >
+  用户要确认分单号 MTE26100022 是否存在于关务表。这是业务数据查询，
+  即使用户没有明确要求生成 SQL，也应交给 NL2SQL。
+
+level: module
+capability: routing
+tags: [router, regression, nl2sql, existence]
+difficulty: easy
+source:
+  type: user_provided
+  note: "用户提供的关务记录查询场景。"
+
+input:
+  message: "分单号为 MTE26100022 的数据，在关务表中是否存在？"
+  session: fresh
+
+expected:
+  handoff_target: NL2SQL
+  handoff_count: 1
+
+graders:
+  - id: expected_handoff_target
+    provider: local
+    target: trial.handoff_target
+    config:
+      equals_expected: expected.handoff_target
+    pass_threshold: 1.0
+    required: true
+  - id: exactly_one_router_handoff
+    provider: local
+    target: trial.handoff_count
+    config:
+      equals_expected: expected.handoff_count
+    pass_threshold: 1.0
+    required: true

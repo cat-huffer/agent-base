@@ -1,0 +1,93 @@
+# E2E Task 样例：仅使用合成 SQLite fixture，不代表真实关务数据库结构。
+# 当前 E2E runner、数据库执行器和 query-safety grader 尚未实现；本文件先约定验收目标。
+
+id: customs_awb_exists
+version: 1.0.0
+name: "查询分单号是否存在于关务表"
+description: >
+  用户询问分单号 MTE26100022 是否存在于关务表。系统应路由到 NL2SQL，
+  使用只读 SELECT 查询合成 fixture，并根据实际查询结果回答。
+
+level: e2e
+capability: read_only_data_query
+tags: [smoke, regression, customs, existence, read_only]
+difficulty: easy
+source:
+  type: synthetic
+  note: "用于验证自然语言查询、只读执行和结果回答的端到端样例。"
+
+input:
+  message: "分单号为 MTE26100022 的数据，在关务表中是否存在？"
+  session: fresh
+
+environment:
+  fixture: customs_awb_v1
+  reset: before_each_trial
+  database:
+    dialect: sqlite
+    permissions: read_only
+    max_rows: 100
+    query_timeout_seconds: 2
+    schema:
+      customs_records: "id INTEGER PRIMARY KEY, awb_no TEXT NOT NULL, status TEXT NOT NULL"
+    seed_data:
+      customs_records:
+        - {id: 1, awb_no: "MTE26100022", status: "cleared"}
+        - {id: 2, awb_no: "MTE26100099", status: "pending"}
+
+expected:
+  handoff_target: NL2SQL
+  query_safety:
+    read_only: true
+    allowed_tables: [customs_records]
+  outcome:
+    exists: true
+    matching_record_count: 1
+  answer:
+    requirements:
+      - "明确回答该分单号存在于关务表中。"
+      - "回答依据是查询结果，不臆造记录字段或状态。"
+
+reference:
+  # 只用于人工核对 fixture 和预期结果；不要求模型生成完全相同的 SQL。
+  sql: >
+    SELECT EXISTS (
+      SELECT 1 FROM customs_records WHERE awb_no = 'MTE26100022'
+    ) AS exists;
+
+graders:
+  - id: expected_handoff_target
+    provider: local
+    target: trial.handoff_target
+    config:
+      equals_expected: expected.handoff_target
+    pass_threshold: 1.0
+    required: true
+  - id: query_is_read_only
+    provider: local
+    target: trial.query_safety.read_only
+    config:
+      equals_expected: expected.query_safety.read_only
+    pass_threshold: 1.0
+    required: true
+  - id: query_uses_only_fixture_tables
+    provider: local
+    target: trial.query_safety.allowed_tables
+    config:
+      equals_expected: expected.query_safety.allowed_tables
+    pass_threshold: 1.0
+    required: true
+  - id: expected_query_outcome
+    provider: local
+    target: trial.outcome.exists
+    config:
+      equals_expected: expected.outcome.exists
+    pass_threshold: 1.0
+    required: true
+  - id: answer_grounded_in_query_result
+    provider: openai_platform
+    target: trial.final_output
+    config:
+      grader_ref: customs_query_answer_grounding_v1
+    pass_threshold: 0.8
+    required: true

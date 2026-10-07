@@ -1,0 +1,40 @@
+# 路由边界：包含业务词汇，但用户要求的是写作协助。
+
+id: router_business_term_writing_request
+version: 1.0.0
+name: "撰写关务资料提醒邮件时路由到 General"
+description: >
+  用户要求撰写一封提醒客户补齐关务资料的邮件，没有要求读取或核验业务记录，
+  应交给 General。此用例用于防止仅因出现“关务资料”而误路由到 NL2SQL。
+
+level: module
+capability: routing
+tags: [router, regression, general, writing, boundary]
+difficulty: medium
+source:
+  type: synthetic
+  note: "用于区分业务语境下的写作请求与业务数据查询。"
+
+input:
+  message: "帮我写一封邮件，提醒客户尽快补齐关务资料。"
+  session: fresh
+
+expected:
+  handoff_target: General
+  handoff_count: 1
+
+graders:
+  - id: expected_handoff_target
+    provider: local
+    target: trial.handoff_target
+    config:
+      equals_expected: expected.handoff_target
+    pass_threshold: 1.0
+    required: true
+  - id: exactly_one_router_handoff
+    provider: local
+    target: trial.handoff_count
+    config:
+      equals_expected: expected.handoff_count
+    pass_threshold: 1.0
+    required: true

@@ -1,0 +1,40 @@
+# 路由边界：按业务编号询问状态，不提 SQL 或具体表名。
+
+id: router_implicit_awb_status
+version: 1.0.0
+name: "按分单号自然语言查询清关状态时路由到 NL2SQL"
+description: >
+  用户根据分单号询问当前清关状态，没有提到 SQL 或关务表名，
+  但目标是获取业务记录，应交给 NL2SQL。
+
+level: module
+capability: routing
+tags: [router, regression, nl2sql, implicit_query, boundary]
+difficulty: medium
+source:
+  type: synthetic
+  note: "用于确认自然语言数据查询不依赖 SQL 关键词或表名。"
+
+input:
+  message: "MTE26100022 当前清关状态是什么？"
+  session: fresh
+
+expected:
+  handoff_target: NL2SQL
+  handoff_count: 1
+
+graders:
+  - id: expected_handoff_target
+    provider: local
+    target: trial.handoff_target
+    config:
+      equals_expected: expected.handoff_target
+    pass_threshold: 1.0
+    required: true
+  - id: exactly_one_router_handoff
+    provider: local
+    target: trial.handoff_count
+    config:
+      equals_expected: expected.handoff_count
+    pass_threshold: 1.0
+    required: true

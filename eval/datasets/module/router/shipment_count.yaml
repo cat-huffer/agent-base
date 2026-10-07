@@ -1,0 +1,40 @@
+# Router Module Eval：自然语言业务查询不要求用户显式提到 SQL。
+
+id: router_shipment_count
+version: 1.0.0
+name: "询问上周出运单数量时路由到 NL2SQL"
+description: >
+  用户用自然语言询问业务记录数量，没有要求展示 SQL。
+  这是对业务数据库的查询请求，应交给 NL2SQL。
+
+level: module
+capability: routing
+tags: [router, regression, nl2sql, count]
+difficulty: easy
+source:
+  type: synthetic
+  note: "用于验证 Router 根据数据查询意图分流，而非依赖 SQL 关键词。"
+
+input:
+  message: "上周一共出运了多少票货物？"
+  session: fresh
+
+expected:
+  handoff_target: NL2SQL
+  handoff_count: 1
+
+graders:
+  - id: expected_handoff_target
+    provider: local
+    target: trial.handoff_target
+    config:
+      equals_expected: expected.handoff_target
+    pass_threshold: 1.0
+    required: true
+  - id: exactly_one_router_handoff
+    provider: local
+    target: trial.handoff_count
+    config:
+      equals_expected: expected.handoff_count
+    pass_threshold: 1.0
+    required: true
